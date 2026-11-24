@@ -581,13 +581,12 @@
       `).join("");
     }
 
-    // --- 題目生成器 ---
     const generators = {
       trap() {
         const n = pick(names);
         const penPrice = randInt(8, 18);
         const penQty = randInt(2, 5);
-        const bookPrice = randInt(25, 45); // 干擾資訊
+        const bookPrice = randInt(25, 45);
         const total = penPrice * penQty;
 
         const sentences = [
@@ -604,9 +603,9 @@
           fullQuestionText: sentences.join(""),
           step1Prompt: "題目裡出現了幾個價錢？哪一個才是「真正需要用到」的？",
           step1Options: shuffle([
-            { text: `只算買 ${penQty} 支原子筆的錢（每支 $${penPrice}），筆記簿 $${bookPrice} 是多餘條件`, correct: true, tip: "對！問題只問買「原子筆」要付多少元，筆記簿價錢是干擾資訊。" },
-            { text: `把原子筆價錢 $${penPrice} 和筆記簿價錢 $${bookPrice} 加起來`, correct: false, tip: "看清楚問題！題目沒有說要買筆記簿。" },
-            { text: `只看筆記簿的價錢 $${bookPrice}`, correct: false, tip: "再讀一次最後一句：問的是「買原子筆一共要付多少元」。" }
+            { text: `只算買 ${penQty} 支原子筆的錢（每支 $${penPrice}），筆記簿 $${bookPrice} 是多餘條件`, correct: true, tip: `對！問題只問買「原子筆」要付多少元，筆記簿價錢是干擾資訊。` },
+            { text: `把原子筆價錢 $${penPrice} 和筆記簿價錢 $${bookPrice} 加起來`, correct: false, tip: `看清楚問題！題目沒有說要買筆記簿。` },
+            { text: `只看筆記簿的價錢 $${bookPrice}`, correct: false, tip: `再讀一次最後一句：問的是「買原子筆一共要付多少元」。` }
           ]),
           diagramSvg: `
             <svg width="100%" height="95" viewBox="0 0 460 95">
@@ -624,8 +623,8 @@
           `,
           step2Prompt: "選擇正確算式：",
           step2Options: shuffle([
-            { text: `${penPrice} × ${penQty}`, correct: true, tip: "每支原子筆 $penPrice，買 penQty 支，用乘法。" },
-            { text: `${penPrice} + ${penQty} + ${bookPrice}`, correct: false, tip: "不要把干擾數字加進去，數量與價錢也不能直接相加。" },
+            { text: `${penPrice} × ${penQty}`, correct: true, tip: `每支原子筆 $${penPrice}，買 ${penQty} 支，用乘法。` },
+            { text: `${penPrice} + ${penQty} + ${bookPrice}`, correct: false, tip: `不要把干擾數字加進去，數量與價錢也不能直接相加。` },
             { text: `${bookPrice} × ${penQty}`, correct: false, tip: `${penQty} 是原子筆的數量，不是筆記簿的數量。` }
           ]),
           answer: total,
@@ -655,9 +654,9 @@
           fullQuestionText: sentences.join(""),
           step1Prompt: "這道題目最後一句問的是什麼？",
           step1Options: shuffle([
-            { text: "問用去錢後，手頭上「還剩下」多少元", correct: true, tip: "很棒！看清「還剩下」，代表原有減去用去。" },
-            { text: "問一共用去了多少元", correct: false, tip: "題目已經直接告訴你用去 ${spent} 元了，再看清楚最後一句！" },
-            { text: "問原有零用錢的兩倍是多少", correct: false, tip: "題目沒有要求計算兩倍。" }
+            { text: `問用去錢後，手頭上「還剩下」多少元`, correct: true, tip: `很棒！看清「還剩下」，代表原有減去用去。` },
+            { text: `問一共用去了多少元`, correct: false, tip: `題目已經直接告訴你用去 ${spent} 元了，再看清楚最後一句！` },
+            { text: `問原有零用錢的兩倍是多少`, correct: false, tip: `題目沒有要求計算兩倍。` }
           ]),
           diagramSvg: `
             <svg width="100%" height="85" viewBox="0 0 460 85">
@@ -670,9 +669,9 @@
           `,
           step2Prompt: "看線段圖，哪一條算式可以求出「還剩多少元」？",
           step2Options: shuffle([
-            { text: `${total} - ${spent}`, correct: true, tip: "原有 ${total} 元減去用去的 ${spent} 元，就是剩下的錢。" },
-            { text: `${total} + ${spent}`, correct: false, tip: "用去錢會變少，不是相加。" },
-            { text: `${spent} - ${total}`, correct: false, tip: "被減數應該是較大的原有金額 ${total}。" }
+            { text: `${total} - ${spent}`, correct: true, tip: `原有 ${total} 元減去用去的 ${spent} 元，就是剩下的錢。` },
+            { text: `${total} + ${spent}`, correct: false, tip: `用去錢會變少，不是相加。` },
+            { text: `${spent} - ${total}`, correct: false, tip: `被減數應該是較大的原有金額 ${total}。` }
           ]),
           answer: remain,
           units: ["元", "張", "盒"],
@@ -703,9 +702,9 @@
           fullQuestionText: sentences.join(""),
           step1Prompt: "這題最後問「多摺了多少隻」，意思是要求什麼？",
           step1Options: shuffle([
-            { text: "先算${n2}摺了幾隻，再算兩人數量的「相差」", correct: true, tip: "答對了！先求 ${n1} 的 ${mult} 倍，再減去 ${n1} 的數量。" },
-            { text: "直接把 ${base} 乘以 ${mult} 就是答案", correct: false, tip: "${base} × ${mult} 算出的是${n2}摺的總數，題目問的是「比${n1}多摺了多少隻」。" },
-            { text: "把 ${base} 和 ${mult} 相加", correct: false, tip: "「${mult} 倍」表示乘法關係，不是相加。" }
+            { text: `先算${n2}摺了幾隻，再算兩人數量的「相差」`, correct: true, tip: `答對了！先求 ${base} 的 ${mult} 倍，再減去 ${base}。` },
+            { text: `直接把 ${base} 乘以 ${mult} 就是答案`, correct: false, tip: `${base} × ${mult} 算出的是${n2}摺的總數，題目問的是「比${n1}多摺了多少隻」。` },
+            { text: `把 ${base} 和 ${mult} 相加`, correct: false, tip: `「${mult} 倍」表示乘法關係，不是相加。` }
           ]),
           diagramSvg: `
             <svg width="100%" height="95" viewBox="0 0 460 95">
@@ -718,7 +717,7 @@
                 const x = 85 + i * 90;
                 const fill = i === 0 ? "#bfdbfe" : "#fde68a";
                 const stroke = i === 0 ? "#2563eb" : "#d97706";
-                const label = i === 0 ? `${base}` : (i === 1 ? "多出部分" : "多出部分");
+                const label = i === 0 ? `${base}` : "多出部分";
                 return `<rect x="${x}" y="46" width="90" height="22" rx="4" fill="${fill}" stroke="${stroke}"/>
                         <text x="${x + 45}" y="61" font-size="11" text-anchor="middle">${label}</text>`;
               }).join("")}
@@ -726,9 +725,9 @@
           `,
           step2Prompt: "選擇正確算式：",
           step2Options: shuffle([
-            { text: `${base} × ${mult} - ${base}`, correct: true, tip: "先算 ${n2} 有 ${base} × ${mult} 隻，再減去${n1}的 ${base} 隻。" },
-            { text: `${base} × ${mult}`, correct: false, tip: "這只是${n2}的數量，還要減去${n1}的數量才得到「多出多少」。" },
-            { text: `${base} × ${mult} + ${base}`, correct: false, tip: "問的是相差（多多少），應用減法而非加法。" }
+            { text: `${base} × ${mult} - ${base}`, correct: true, tip: `先算${n2}有 ${base} × ${mult} 隻，再減去${n1}的 ${base} 隻。` },
+            { text: `${base} × ${mult}`, correct: false, tip: `這只是${n2}的數量，還要減去${n1}的數量才得到「多出多少」。` },
+            { text: `${base} × ${mult} + ${base}`, correct: false, tip: `問的是相差（多多少），應用減法而非加法。` }
           ]),
           answer: diff,
           units: ["隻", "倍", "張"],
@@ -753,14 +752,14 @@
         return {
           type: "remainder",
           category: "有餘數除法（進一法）",
-          focusTag: "餘下的 ${rem} 人也要過河！",
+          focusTag: `餘下的 ${rem} 人也要過河！`,
           sentences,
           fullQuestionText: sentences.join(""),
-          step1Prompt: "如果 ${total} ÷ ${cap} 算出商是 ${q}、餘數是 ${rem}，這 ${rem} 人該怎麼辦？",
+          step1Prompt: `如果 ${total} ÷ ${cap} 算出商是 ${q}、餘數是 ${rem}，這 ${rem} 人該怎麼辦？`,
           step1Options: shuffle([
-            { text: "還剩 ${rem} 人未過河，所以要再多租 1 艘船（共 ${needBoats} 艘）", correct: true, tip: "對！題目說「全部同學都過河」，餘數不能丟下，要加 1 艘。" },
-            { text: "把餘數捨去，只需租 ${q} 艘船", correct: false, tip: "如果只租 ${q} 艘，會有 ${rem} 名同學留在岸邊過不了河！" },
-            { text: "只租 ${rem} 艘船", correct: false, tip: "${rem} 是餘數人數，不是船的數量。" }
+            { text: `還剩 ${rem} 人未過河，所以要再多租 1 艘船（共 ${needBoats} 艘）`, correct: true, tip: `對！題目說「全部同學都過河」，餘數不能丟下，要加 1 艘。` },
+            { text: `把餘數捨去，只需租 ${q} 艘船`, correct: false, tip: `如果只租 ${q} 艘，會有 ${rem} 名同學留在岸邊過不了河！` },
+            { text: `只租 ${rem} 艘船`, correct: false, tip: `${rem} 是餘數人數，不是船的數量。` }
           ]),
           diagramSvg: `
             <svg width="100%" height="80" viewBox="0 0 460 80">
@@ -773,9 +772,9 @@
           `,
           step2Prompt: "哪一組算式能正確求出最少需要的船數？",
           step2Options: shuffle([
-            { text: `${total} ÷ ${cap} = ${q} …… ${rem}，再 ${q} + 1 = ${needBoats}`, correct: true, tip: "商 ${q} 艘再加上餘數需要的 1 艘，一共 ${needBoats} 艘。" },
-            { text: `${total} ÷ ${cap} = ${q}，答案就是 ${q}`, correct: false, tip: "別忘了還有 ${rem} 人需要坐船！" },
-            { text: `${total} - ${cap}`, correct: false, tip: "每艘載 ${cap} 人是平均分組，應用除法。" }
+            { text: `${total} ÷ ${cap} = ${q} …… ${rem}，再 ${q} + 1 = ${needBoats}`, correct: true, tip: `商 ${q} 艘再加上餘數需要的 1 艘，一共 ${needBoats} 艘。` },
+            { text: `${total} ÷ ${cap} = ${q}，答案就是 ${q}`, correct: false, tip: `別忘了還有 ${rem} 人需要坐船！` },
+            { text: `${total} - ${cap}`, correct: false, tip: `每艘載 ${cap} 人是平均分組，應用除法。` }
           ]),
           answer: needBoats,
           units: ["艘", "人", "組"],
@@ -805,9 +804,9 @@
           fullQuestionText: sentences.join(""),
           step1Prompt: "計算前，第一步最重要的審題動作是什麼？",
           step1Options: shuffle([
-            { text: "先看清楚題目問「多少厘米」，把 ${m} 米 ${cm} 厘米換算成 ${totalCm} 厘米", correct: true, tip: "太棒了！單位相同才能直接加減，且答案單位要選「厘米」。" },
-            { text: "直接用 ${m} 減去 ${cutCm}", correct: false, tip: "單位不同（米和厘米），不能直接相減。" },
-            { text: "答案單位寫成「米」", correct: false, tip: "再看最後一句：問的是「還剩下多少厘米」。" }
+            { text: `先看清楚題目問「多少厘米」，把 ${m} 米 ${cm} 厘米換算成 ${totalCm} 厘米`, correct: true, tip: `太棒了！單位相同才能直接加減，且答案單位要選「厘米」。` },
+            { text: `直接用 ${m} 減去 ${cutCm}`, correct: false, tip: `單位不同（米和厘米），不能直接相減。` },
+            { text: `答案單位寫成「米」`, correct: false, tip: `再看最後一句：問的是「還剩下多少厘米」。` }
           ]),
           diagramSvg: `
             <svg width="100%" height="80" viewBox="0 0 460 80">
@@ -820,9 +819,9 @@
           `,
           step2Prompt: "統一為「厘米」後，正確算式是：",
           step2Options: shuffle([
-            { text: `${totalCm} - ${cutCm}`, correct: true, tip: "${m} 米 ${cm} 厘米 = ${totalCm} 厘米，減去 ${cutCm} 厘米。" },
-            { text: `${m}${cm} - ${cutCm}`, correct: false, tip: "1 米等於 100 厘米，不是 10 厘米。" },
-            { text: `${totalCm} + ${cutCm}`, correct: false, tip: "剪去是減少，應用減法。" }
+            { text: `${totalCm} - ${cutCm}`, correct: true, tip: `${m} 米 ${cm} 厘米 = ${totalCm} 厘米，減去 ${cutCm} 厘米。` },
+            { text: `${m}${cm} - ${cutCm}`, correct: false, tip: `1 米等於 100 厘米，不是 10 厘米。` },
+            { text: `${totalCm} + ${cutCm}`, correct: false, tip: `剪去是減少，應用減法。` }
           ]),
           answer: ansCm,
           units: ["厘米", "米", "毫米"],
@@ -856,7 +855,6 @@
         span.addEventListener("click", () => span.classList.toggle("marked"));
       });
 
-      // Reset Step 1
       document.getElementById("step1Box").classList.remove("locked");
       document.getElementById("step1Tag").textContent = "進行中";
       document.getElementById("step1Tag").classList.remove("done");
@@ -874,7 +872,6 @@
         s1Opts.appendChild(btn);
       });
 
-      // Reset Step 2
       document.getElementById("step2Box").classList.add("locked");
       document.getElementById("step2Tag").textContent = "未解鎖";
       document.getElementById("step2Tag").classList.remove("done");
@@ -883,7 +880,6 @@
       document.getElementById("step2Options").innerHTML = "";
       document.getElementById("step2Feedback").className = "feedback";
 
-      // Reset Step 3
       document.getElementById("step3Box").classList.add("locked");
       document.getElementById("step3Tag").textContent = "未解鎖";
       document.getElementById("step3Tag").classList.remove("done");
@@ -892,7 +888,6 @@
       document.getElementById("userAnswerInput").value = "";
       document.getElementById("step3Feedback").className = "feedback";
 
-      // Reset Solution & Next
       document.getElementById("solutionBox").className = "solution-box";
       document.getElementById("solutionBox").innerHTML = "";
       document.getElementById("btnNextProblem").disabled = true;
