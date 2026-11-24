@@ -353,4 +353,930 @@
 
     .feedback.err {
       background: var(--danger-soft);
-      color: #7f1d1d
+      color: #7f1d1d;
+      border: 1px solid #fca5a5;
+    }
+
+    .solution-box {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 14px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      display: none;
+    }
+
+    .solution-box.show {
+      display: block;
+    }
+
+    .mistakes-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mistake-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 600px) {
+      .problem-box {
+        font-size: 1.05rem;
+      }
+      .card, header {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>🕵️‍♂️ 審題小偵探（小三深度變奏版）</h1>
+        <p>拆解多變問法、看穿干擾條件與餘數陷阱，再畫圖列式！</p>
+      </div>
+      <div class="stats">
+        <div class="stat-pill">
+          <span class="num" id="statSolved">0</span>
+          <span class="lbl">已破案題數</span>
+        </div>
+        <div class="stat-pill">
+          <span class="num" id="statStreak">0</span>
+          <span class="lbl">連續答對</span>
+        </div>
+        <div class="stat-pill">
+          <span class="num" id="statStars">0</span>
+          <span class="lbl">偵探星星</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <label for="typeFilter">專攻題型：</label>
+        <select id="typeFilter">
+          <option value="all">全部變奏題型（隨機挑戰）</option>
+          <option value="reverse_restore">反向還原：由「剩餘＋花費」求原本</option>
+          <option value="remainder_twist">餘數雙重變奏：進一法 vs 去尾法</option>
+          <option value="compare_shift">比較變奏：問相差、總和或「少幾多」</option>
+          <option value="multi_distractor">雙重陷阱：干擾數字＋看清提問對象</option>
+          <option value="unit_cross">跨單位進階：元與角／升與毫升／時與分</option>
+        </select>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn-accent" id="btnNewProblem">🔄 換一題變奏題</button>
+        <button class="btn-outline" id="btnResetStats">重設紀錄</button>
+      </div>
+    </div>
+
+    <main class="card">
+      <div class="badge-row">
+        <span class="badge" id="problemCategory">題型</span>
+        <span class="badge trap" id="problemFocusTag">審題重點</span>
+      </div>
+
+      <div class="problem-box" id="problemText"></div>
+      <div class="hint-tip">💡 點擊題目中任何一句話，可以用黃色螢光筆標記「真正問題」或「關鍵數字」！</div>
+
+      <div class="steps">
+        <div class="step-box" id="step1Box">
+          <div class="step-header">
+            <span>第一步：拆解題意與真正所求</span>
+            <span class="step-tag" id="step1Tag">進行中</span>
+          </div>
+          <div id="step1Prompt"></div>
+          <div class="options-grid" id="step1Options"></div>
+          <div class="feedback" id="step1Feedback"></div>
+        </div>
+
+        <div class="step-box locked" id="step2Box">
+          <div class="step-header">
+            <span>第二步：看線段圖，選對計算邏輯</span>
+            <span class="step-tag" id="step2Tag">未解鎖</span>
+          </div>
+          <div class="diagram-wrap" id="diagramArea"></div>
+          <div id="step2Prompt">請先完成第一步審題，即可解鎖線段圖與列式選擇。</div>
+          <div class="options-grid" id="step2Options"></div>
+          <div class="feedback" id="step2Feedback"></div>
+        </div>
+
+        <div class="step-box locked" id="step3Box">
+          <div class="step-header">
+            <span>第三步：輸入最終數字與單位</span>
+            <span class="step-tag" id="step3Tag">未解鎖</span>
+          </div>
+          <div id="step3Prompt">請先完成第二步列式，再輸入最終答案。</div>
+          <div class="answer-row" id="answerInputRow" style="display:none;">
+            <input type="number" id="userAnswerInput" placeholder="輸入數字" />
+            <select id="userUnitSelect"></select>
+            <button class="btn-success" id="btnCheckAnswer">核對答案</button>
+          </div>
+          <div class="feedback" id="step3Feedback"></div>
+        </div>
+      </div>
+
+      <div class="solution-box" id="solutionBox"></div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-primary" id="btnNextProblem" disabled>下一道深度變奏題 ➡️</button>
+      </div>
+    </main>
+
+    <section class="card">
+      <h2 style="margin: 0 0 6px; font-size: 1.15rem;">📓 審題錯題本（記錄容易看錯的陷阱）</h2>
+      <p style="margin: 0; color: var(--muted); font-size: 0.9rem;">每次答錯審題、列式或答案，系統會自動記在這裡，方便重溫易錯點。</p>
+      <div class="mistakes-list" id="mistakesList">
+        <div style="color: var(--muted); font-size: 0.92rem;">目前未有錯題，繼續保持細心！</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const names = ["家朗", "詩詠", "子軒", "曉彤", "柏宇", "嘉怡", "俊傑", "卓琳", "晞彤", "睿希"];
+    const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const shuffle = (arr) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const state = {
+      solved: 0,
+      streak: 0,
+      stars: 0,
+      mistakes: [],
+      current: null,
+      step1Done: false,
+      step2Done: false,
+      step3Done: false,
+      recordedMistakeThisRound: false
+    };
+
+    function saveState() {
+      localStorage.setItem("p3_math_detective_v2", JSON.stringify({
+        solved: state.solved,
+        streak: state.streak,
+        stars: state.stars,
+        mistakes: state.mistakes
+      }));
+    }
+
+    function loadState() {
+      try {
+        const raw = JSON.parse(localStorage.getItem("p3_math_detective_v2"));
+        if (raw) {
+          state.solved = raw.solved || 0;
+          state.streak = raw.streak || 0;
+          state.stars = raw.stars || 0;
+          state.mistakes = Array.isArray(raw.mistakes) ? raw.mistakes : [];
+        }
+      } catch (e) {}
+      renderStats();
+      renderMistakes();
+    }
+
+    function renderStats() {
+      document.getElementById("statSolved").textContent = state.solved;
+      document.getElementById("statStreak").textContent = state.streak;
+      document.getElementById("statStars").textContent = state.stars;
+    }
+
+    function recordMistake(reason) {
+      if (state.recordedMistakeThisRound || !state.current) return;
+      state.recordedMistakeThisRound = true;
+      state.mistakes.unshift({
+        category: state.current.category,
+        question: state.current.fullQuestionText,
+        reason
+      });
+      if (state.mistakes.length > 25) state.mistakes.pop();
+      saveState();
+      renderMistakes();
+    }
+
+    function renderMistakes() {
+      const el = document.getElementById("mistakesList");
+      if (!state.mistakes.length) {
+        el.innerHTML = `<div style="color: var(--muted); font-size: 0.92rem;">目前未有錯題，繼續保持細心！</div>`;
+        return;
+      }
+      el.innerHTML = state.mistakes.map(m => `
+        <div class="mistake-item">
+          <strong>【${m.category}】</strong> ${m.question}<br/>
+          <span style="color:#9a3412;">審題提醒：${m.reason}</span>
+        </div>
+      `).join("");
+    }
+
+    const generators = {
+      reverse_restore() {
+        const n = pick(names);
+        const item = pick(["模型車", "繪本", "拼圖", "羽毛球筒"]);
+        const unit = pick(["輛", "本", "盒", "筒"]);
+        const price = randInt(16, 38);
+        const qty = randInt(2, 4);
+        const left = randInt(15, 55);
+        const spent = price * qty;
+        const original = spent + left;
+        const extraInfo = randInt(12, 28);
+
+        const sentences = shuffle([
+          `${n}買了 ${qty} ${unit}${item}，每${unit} $${price}。`,
+          `付錢後錢包裡還剩下 ${left} 元。`,
+          `同場另有每件 $${extraInfo} 的貼紙包，但${n}沒有購買。`
+        ]);
+        sentences.push(`請問${n}出門前原本帶了多少元？`);
+
+        return {
+          type: "reverse_restore",
+          category: "反向還原：求原本總數",
+          focusTag: "「還剩」也要加回去！",
+          sentences,
+          fullQuestionText: sentences.join(""),
+          step1Prompt: `題目給了「買 ${qty} ${unit}（每${unit} $${price}）」和「還剩 ${left} 元」，要算「原本有多少元」，應該怎麼想？`,
+          step1Options: shuffle([
+            { text: `原本的錢 ＝ 用去的錢（${price} × ${qty}）＋ 剩下的錢（${left}）`, correct: true, tip: `太準確了！原本的錢分成「花掉的」和「剩下的」兩部分，合起來才是原本總數。` },
+            { text: `原本的錢 ＝ 用去的錢（${price} × ${qty}）－ 剩下的錢（${left}）`, correct: false, tip: `如果減去剩下的錢，算出的就不是出門前原有的錢了。` },
+            { text: `直接用 ${left} 加上貼紙包 $${extraInfo}`, correct: false, tip: `${n}沒有買貼紙包，而且別忘了先算買 ${qty} ${unit}${item}花了多少錢。` }
+          ]),
+          diagramSvg: `
+            <svg width="100%" height="88" viewBox="0 0 460 88">
+              <text x="10" y="25" font-size="13" fill="#1e293b" font-weight="bold">出門前原有 ？元</text>
+              <rect x="135" y="10" width="185" height="24" rx="4" fill="#fde68a" stroke="#d97706"/>
+              <text x="227" y="27" font-size="12" text-anchor="middle">買 ${qty} ${unit}（共 ${spent} 元）</text>
+              <rect x="320" y="10" width="125" height="24" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+              <text x="382" y="27" font-size="12" text-anchor="middle">還剩 ${left} 元</text>
+              <text x="135" y="58" font-size="12" fill="#64748b">（干擾：未買的貼紙 $${extraInfo} 不計入）</text>
+            </svg>
+          `,
+          step2Prompt: "哪一條算式正確？",
+          step2Options: shuffle([
+            { text: `${price} × ${qty} + ${left}`, correct: true, tip: `先算買 ${item} 花了 ${spent} 元，再加上剩下的 ${left} 元。` },
+            { text: `${price} × ${qty} - ${left}`, correct: false, tip: `花掉的錢加上剩下的錢才是原本的錢，不是相減。` },
+            { text: `${price} + ${qty} + ${left}`, correct: false, tip: `${qty} ${unit}每${unit} $${price}，要用乘法算花費。` }
+          ]),
+          answer: original,
+          units: ["元", "角", unit],
+          correctUnit: "元",
+          explanation: `買 ${qty} ${unit}${item}用去 ${price} × ${qty} = ${spent} 元，加上還剩的 ${left} 元，出門前原有 ${spent} + ${left} = ${original} 元。`
+        };
+      },
+
+      remainder_twist() {
+        const mode = pick(["ceil", "floor"]);
+        const cap = randInt(4, 7);
+        const q = randInt(4, 8);
+        const rem = randInt(1, cap - 1);
+        const total = cap * q + rem;
+
+        if (mode === "ceil") {
+          const ans = q + 1;
+          const sentences = [
+            `學校旅行安排小巴，每輛小巴最多可載 ${cap} 名師生。`,
+            `參加旅行的共有 ${total} 人。`,
+            `為了讓每一位參加者都能坐車出發，最少需要安排多少輛小巴？`
+          ];
+          return {
+            type: "remainder_twist",
+            category: "餘數變奏：進一法（最少需要）",
+            focusTag: `餘 ${rem} 人不能丟下 → ＋1`,
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: `${total} ÷ ${cap} ＝ ${q} 餘 ${rem}。題目要求「每一位都能坐車」，這餘下的 ${rem} 人怎麼處理？`,
+            step1Options: shuffle([
+              { text: `要多安排 1 輛小巴載這 ${rem} 人，所以是 ${q} ＋ 1 ＝ ${ans} 輛`, correct: true, tip: `對！少 1 輛就會有人沒車坐，所以餘數要進一。` },
+              { text: `直接寫 ${q} 輛，餘數不用理會`, correct: false, tip: `如果只安排 ${q} 輛，會有 ${rem} 人上不了車！` },
+              { text: `只安排 ${rem} 輛`, correct: false, tip: `${rem} 是餘下的人數，不是小巴數量。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="80" viewBox="0 0 460 80">
+                <text x="10" y="28" font-size="13" fill="#1e293b" font-weight="bold">共 ${total} 人</text>
+                <rect x="95" y="12" width="225" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+                <text x="207" y="29" font-size="12" text-anchor="middle">${q} 輛坐滿（每輛 ${cap} 人）</text>
+                <rect x="326" y="12" width="122" height="24" rx="4" fill="#fecaca" stroke="#dc2626"/>
+                <text x="387" y="29" font-size="12" text-anchor="middle" fill="#991b1b">剩 ${rem} 人 → ＋1 輛</text>
+              </svg>
+            `,
+            step2Prompt: "選擇正確的計算步驟：",
+            step2Options: shuffle([
+              { text: `${total} ÷ ${cap} ＝ ${q} …… ${rem}，${q} + 1 = ${ans}`, correct: true, tip: `滿載 ${q} 輛再加 1 輛，共 ${ans} 輛。` },
+              { text: `${total} ÷ ${cap} ＝ ${q}（直接作答）`, correct: false, tip: `別忘了餘下的 ${rem} 人也要坐車。` },
+              { text: `${total} - ${cap}`, correct: false, tip: `每輛載 ${cap} 人要用除法分組。` }
+            ]),
+            answer: ans,
+            units: ["輛", "人", "組"],
+            correctUnit: "輛",
+            explanation: `${total} ÷ ${cap} ＝ ${q}（輛）…… ${rem}（人）。餘下 ${rem} 人仍需 1 輛小巴，最少需要 ${q} + 1 = ${ans} 輛。`
+          };
+        } else {
+          const ans = q;
+          const sentences = [
+            `手工課每做 1 個燈籠需要彩紙 ${cap} 張。`,
+            `老師現有彩紙 ${total} 張。`,
+            `請問最多可以做滿多少個燈籠？（不夠 ${cap} 張便做不成 1 個）`
+          ];
+          return {
+            type: "remainder_twist",
+            category: "餘數變奏：去尾法（最多可做滿）",
+            focusTag: `餘 ${rem} 張不夠做 1 個 → 不加 1`,
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: `${total} ÷ ${cap} ＝ ${q} 餘 ${rem}。題目問「最多可以做滿多少個」，剩下的 ${rem} 張彩紙能多做 1 個嗎？`,
+            step1Options: shuffle([
+              { text: `不能，因為 ${rem} 張少於 ${cap} 張，做不成 1 個，所以最多做滿 ${q} 個`, correct: true, tip: `很清醒！不是每題有餘數都要加 1，看清題目問「最多可做滿多少個」。` },
+              { text: `可以，餘數有剩就要加 1，變成 ${q + 1} 個`, correct: false, tip: `小心陷阱！做 1 個要 ${cap} 張，只有 ${rem} 張不夠做滿 1 個。` },
+              { text: `答案是 ${rem} 個`, correct: false, tip: `${rem} 是剩下的彩紙張數，不是燈籠個數。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="80" viewBox="0 0 460 80">
+                <text x="10" y="28" font-size="13" fill="#1e293b" font-weight="bold">彩紙 ${total} 張</text>
+                <rect x="95" y="12" width="235" height="24" rx="4" fill="#bbf7d0" stroke="#16a34a"/>
+                <text x="212" y="29" font-size="12" text-anchor="middle">做滿 ${q} 個（每個 ${cap} 張）</text>
+                <rect x="336" y="12" width="112" height="24" rx="4" fill="#fef3c7" stroke="#d97706"/>
+                <text x="392" y="29" font-size="12" text-anchor="middle" fill="#92400e">剩 ${rem} 張（不夠）</text>
+              </svg>
+            `,
+            step2Prompt: "哪一條算式能求出「最多可做滿多少個」？",
+            step2Options: shuffle([
+              { text: `${total} ÷ ${cap} ＝ ${q} …… ${rem}（答案取商 ${q}）`, correct: true, tip: `餘數 ${rem} 不足 ${cap}，捨去餘數，最多做滿 ${q} 個。` },
+              { text: `${total} ÷ ${cap} ＝ ${q}，再 ${q} + 1 = ${q + 1}`, correct: false, tip: `這是「進一法」的套路，這題問的是「做滿」且餘數不夠 1 份。` },
+              { text: `${total} × ${cap}`, correct: false, tip: `總張數除以每份張數才是可做成的份數。` }
+            ]),
+            answer: ans,
+            units: ["個", "張", "份"],
+            correctUnit: "個",
+            explanation: `${total} ÷ ${cap} ＝ ${q}（個）…… ${rem}（張）。餘下 ${rem} 張不夠再做 1 個燈籠，所以最多可做滿 ${q} 個。`
+          };
+        }
+      },
+
+      compare_shift() {
+        const askMode = pick(["diff", "sum", "less_item"]);
+        const n1 = pick(names);
+        let n2 = pick(names);
+        if (n2 === n1) n2 = "梓軒";
+        const base = randInt(14, 32);
+        const mult = randInt(2, 3);
+        const moreAmt = randInt(8, 22);
+
+        if (askMode === "diff") {
+          const n2Total = base * mult;
+          const diff = n2Total - base;
+          const sentences = [
+            `${n1}收集了 ${base} 枚貼紙。`,
+            `${n2}收集的貼紙數量是${n1}的 ${mult} 倍。`,
+            `請問${n2}比${n1}多收集了多少枚貼紙？`
+          ];
+          return {
+            type: "compare_shift",
+            category: "比較變奏：倍數下的相差",
+            focusTag: "先求倍數總量，再求相差",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: "題目先說「倍數」，最後問「多收集了多少枚」。關鍵在於區分：",
+            step1Options: shuffle([
+              { text: `先算${n2}有 ${base} × ${mult} ＝ ${n2Total} 枚，再減去${n1}的 ${base} 枚`, correct: true, tip: `對！「${mult} 倍」是${n2}的總數，再減去${n1}的數量才是「多出多少」。` },
+              { text: `直接算 ${base} × ${mult} 就是答案`, correct: false, tip: `${n2Total} 是${n2}的總數，題目問的是「比${n1}多」多少。` },
+              { text: `用 ${n2Total} 加上 ${base}`, correct: false, tip: `比${n1}多多少要用減法相減。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="92" viewBox="0 0 460 92">
+                <text x="10" y="24" font-size="13" font-weight="bold">${n1}：${base} 枚</text>
+                <rect x="120" y="10" width="90" height="22" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+                <text x="10" y="58" font-size="13" font-weight="bold">${n2}：${mult} 倍</text>
+                ${Array.from({ length: mult }, (_, i) => {
+                  const x = 120 + i * 90;
+                  return `<rect x="${x}" y="44" width="90" height="22" rx="4" fill="${i === 0 ? "#bfdbfe" : "#fde68a"}" stroke="${i === 0 ? "#2563eb" : "#d97706"}"/>
+                          <text x="${x + 45}" y="59" font-size="11" text-anchor="middle">${i === 0 ? base : "相差部分"}</text>`;
+                }).join("")}
+              </svg>
+            `,
+            step2Prompt: "選擇正確算式：",
+            step2Options: shuffle([
+              { text: `${base} × ${mult} - ${base}`, correct: true, tip: `${n2}的數量減去${n1}的數量。` },
+              { text: `${base} × ${mult}`, correct: false, tip: `這只算出${n2}的數量，尚未算出多出多少。` },
+              { text: `${base} × ${mult} + ${base}`, correct: false, tip: `這是求兩人合共，不是相差。` }
+            ]),
+            answer: diff,
+            units: ["枚", "倍", "張"],
+            correctUnit: "枚",
+            explanation: `${n2}收集了 ${base} × ${mult} = ${n2Total} 枚，比${n1}多 ${n2Total} - ${base} = ${diff} 枚。`
+          };
+        } else if (askMode === "sum") {
+          const n2Total = base * mult;
+          const total = base + n2Total;
+          const sentences = [
+            `${n1}收集了 ${base} 枚貼紙。`,
+            `${n2}收集的貼紙數量是${n1}的 ${mult} 倍。`,
+            `請問兩人合共有多少枚貼紙？`
+          ];
+          return {
+            type: "compare_shift",
+            category: "比較變奏：倍數下的合共",
+            focusTag: "「合共」＝ 兩人加起來",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: "這題最後問「兩人合共有多少枚」，意思是：",
+            step1Options: shuffle([
+              { text: `把${n1}的 ${base} 枚和${n2}的（${base} × ${mult}）枚加起來`, correct: true, tip: `沒錯！「合共」要把兩人的數量合併計算。` },
+              { text: `只算${n2}的 ${base} × ${mult} 枚`, correct: false, tip: `這樣漏了${n1}原本的 ${base} 枚。` },
+              { text: `用${n2}的數量減去${n1}的數量`, correct: false, tip: `那是求「相差」，不是「合共」。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="88" viewBox="0 0 460 88">
+                <text x="10" y="26" font-size="13" font-weight="bold">合共 ？枚</text>
+                <rect x="95" y="10" width="85" height="24" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+                <text x="137" y="27" font-size="12" text-anchor="middle">${n1} ${base}</text>
+                <rect x="184" y="10" width="250" height="24" rx="4" fill="#fde68a" stroke="#d97706"/>
+                <text x="309" y="27" font-size="12" text-anchor="middle">${n2}（${base} × ${mult} ＝ ${n2Total}）</text>
+              </svg>
+            `,
+            step2Prompt: "選擇正確算式：",
+            step2Options: shuffle([
+              { text: `${base} + ${base} × ${mult}`, correct: true, tip: `${n1}的數量加上${n2}的數量。` },
+              { text: `${base} × ${mult} - ${base}`, correct: false, tip: `這是求「多多少」，不是「合共」。` },
+              { text: `${base} + ${mult}`, correct: false, tip: `${mult} 是倍數，不是貼紙枚數。` }
+            ]),
+            answer: total,
+            units: ["枚", "倍", "份"],
+            correctUnit: "枚",
+            explanation: `${n2}有 ${base} × ${mult} = ${n2Total} 枚，兩人合共有 ${base} + ${n2Total} = ${total} 枚。`
+          };
+        } else {
+          const big = base + moreAmt;
+          const sentences = [
+            `書架上有故事書 ${big} 本。`,
+            `故事書比漫畫書多 ${moreAmt} 本。`,
+            `請問漫畫書有多少本？`
+          ];
+          return {
+            type: "compare_shift",
+            category: "比較變奏：由「多幾多」反求較少者",
+            focusTag: "看到「多」不一定是加法！",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: "題目寫「故事書比漫畫書多 ${moreAmt} 本」，要算「漫畫書有多少本」，該用加法還是減法？",
+            step1Options: shuffle([
+              { text: `用減法（${big} － ${moreAmt}），因為漫畫書比故事書少`, correct: true, tip: `極佳的審題！故事書較多，漫畫書較少，求較少數量要用減法。` },
+              { text: `看到「多」字就用加法（${big} ＋ ${moreAmt}）`, correct: false, tip: `這是小三最常見的陷阱！故事書已經有 ${big} 本且較多，漫畫書應該比 ${big} 少。` },
+              { text: `用 ${big} 除以 ${moreAmt}`, correct: false, tip: `這裡是相差數量（多 ${moreAmt} 本），不是倍數關係。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="92" viewBox="0 0 460 92">
+                <text x="10" y="24" font-size="13" font-weight="bold">故事書：</text>
+                <rect x="85" y="10" width="220" height="22" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+                <text x="195" y="25" font-size="12" text-anchor="middle">共 ${big} 本</text>
+                <text x="10" y="58" font-size="13" font-weight="bold">漫畫書：</text>
+                <rect x="85" y="44" width="145" height="22" rx="4" fill="#bbf7d0" stroke="#16a34a"/>
+                <text x="157" y="59" font-size="12" text-anchor="middle">？本</text>
+                <rect x="230" y="44" width="75" height="22" rx="4" fill="#fef3c7" stroke="#d97706"/>
+                <text x="267" y="59" font-size="11" text-anchor="middle">少 ${moreAmt} 本</text>
+              </svg>
+            `,
+            step2Prompt: "選擇正確算式：",
+            step2Options: shuffle([
+              { text: `${big} - ${moreAmt}`, correct: true, tip: `故事書 ${big} 本減去多出的 ${moreAmt} 本，就是漫畫書數量。` },
+              { text: `${big} + ${moreAmt}`, correct: false, tip: `這樣會算出比 ${big} 更多的數。` },
+              { text: `${moreAmt} - ${big}`, correct: false, tip: `被減數應為較大的 ${big}。` }
+            ]),
+            answer: base,
+            units: ["本", "頁", "個"],
+            correctUnit: "本",
+            explanation: `故事書有 ${big} 本，比漫畫書多 ${moreAmt} 本，所以漫畫書有 ${big} - ${moreAmt} = ${base} 本。`
+          };
+        }
+      },
+
+      multi_distractor() {
+        const boyCount = randInt(14, 22);
+        const girlCount = randInt(13, 21);
+        const ticketsPerStudent = randInt(2, 4);
+        const askTarget = pick(["girls_tickets", "all_tickets"]);
+        const distractorPrice = randInt(10, 25);
+
+        if (askTarget === "girls_tickets") {
+          const ans = girlCount * ticketsPerStudent;
+          const sentences = [
+            `3A 班有男生 ${boyCount} 人，女生 ${girlCount} 人。`,
+            `學校派發參觀券，每人可獲 ${ticketsPerStudent} 張（每張門票原價 $${distractorPrice}）。`,
+            `請問 3A 班「女生」合共可獲多少張參觀券？`
+          ];
+          return {
+            type: "multi_distractor",
+            category: "雙重陷阱：看清提問對象",
+            focusTag: "只問「女生」＋ 門票價錢無關",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: "題目出現了男生人數、女生人數、每人張數與門票價錢。哪些才是計算所需的？",
+            step1Options: shuffle([
+              { text: `只用女生 ${girlCount} 人 × 每人 ${ticketsPerStudent} 張；男生人數與門票價錢都不算`, correct: true, tip: `看得很仔細！問題只問「女生」合共可獲多少張。` },
+              { text: `先算全班（${boyCount}＋${girlCount}）人再乘 ${ticketsPerStudent}`, correct: false, tip: `題目只問「女生」，不是全班。` },
+              { text: `用 ${girlCount} 乘以門票價錢 $${distractorPrice}`, correct: false, tip: `題目問的是「多少張參觀券」，不是價錢。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="86" viewBox="0 0 460 86">
+                <text x="10" y="25" font-size="13" font-weight="bold">女生（${girlCount} 人）：</text>
+                <rect x="115" y="10" width="230" height="24" rx="4" fill="#fbcfe8" stroke="#db2777"/>
+                <text x="230" y="27" font-size="12" text-anchor="middle">每人 ${ticketsPerStudent} 張 → 共 ？張</text>
+                <text x="10" y="58" font-size="12" fill="#64748b">干擾：男生 ${boyCount} 人、票價 $${distractorPrice}（本題不計）</text>
+              </svg>
+            `,
+            step2Prompt: "選擇正確算式：",
+            step2Options: shuffle([
+              { text: `${girlCount} × ${ticketsPerStudent}`, correct: true, tip: `女生 ${girlCount} 人，每人 ${ticketsPerStudent} 張，用乘法。` },
+              { text: `(${boyCount} + ${girlCount}) × ${ticketsPerStudent}`, correct: false, tip: `這算的是全班總張數，不是女生。` },
+              { text: `${girlCount} + ${ticketsPerStudent}`, correct: false, tip: `每人獲 ${ticketsPerStudent} 張是等分乘法。` }
+            ]),
+            answer: ans,
+            units: ["張", "人", "元"],
+            correctUnit: "張",
+            explanation: `女生有 ${girlCount} 人，每人獲 ${ticketsPerStudent} 張參觀券，女生合共可獲 ${girlCount} × ${ticketsPerStudent} = ${ans} 張。`
+          };
+        } else {
+          const totalStudents = boyCount + girlCount;
+          const ans = totalStudents * ticketsPerStudent;
+          const sentences = [
+            `3B 班有男生 ${boyCount} 人，女生 ${girlCount} 人。`,
+            `每人需要派發 ${ticketsPerStudent} 張手工紙（每包手工紙售 $${distractorPrice}）。`,
+            `請問全班合共需要多少張手工紙？`
+          ];
+          return {
+            type: "multi_distractor",
+            category: "雙重陷阱：先合併人數再乘",
+            focusTag: "「全班」＝ 男生＋女生",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: "要算「全班合共需要多少張手工紙」，第一步先做什麼？",
+            step1Options: shuffle([
+              { text: `先算全班人數（${boyCount} ＋ ${girlCount}），再乘以每人 ${ticketsPerStudent} 張`, correct: true, tip: `對！全班包含男生和女生，先求總人數再算總張數。` },
+              { text: `只用女生人數乘以 ${ticketsPerStudent}`, correct: false, tip: `男生也需要手工紙，全班要一起算。` },
+              { text: `把 ${boyCount}、${girlCount} 和 $${distractorPrice} 加起來`, correct: false, tip: `價錢與張數不同，且每人 ${ticketsPerStudent} 張要用乘法。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="86" viewBox="0 0 460 86">
+                <text x="10" y="25" font-size="13" font-weight="bold">全班人數：</text>
+                <rect x="95" y="10" width="110" height="24" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+                <text x="150" y="27" font-size="12" text-anchor="middle">男 ${boyCount} 人</text>
+                <rect x="208" y="10" width="110" height="24" rx="4" fill="#fbcfe8" stroke="#db2777"/>
+                <text x="263" y="27" font-size="12" text-anchor="middle">女 ${girlCount} 人</text>
+                <text x="328" y="27" font-size="12" font-weight="bold">→ ×${ticketsPerStudent} 張</text>
+                <text x="10" y="58" font-size="12" fill="#64748b">干擾：每包售價 $${distractorPrice}（本題不計）</text>
+              </svg>
+            `,
+            step2Prompt: "選擇正確的混合算式：",
+            step2Options: shuffle([
+              { text: `(${boyCount} + ${girlCount}) × ${ticketsPerStudent}`, correct: true, tip: `先用括號算出全班共 ${totalStudents} 人，再乘 ${ticketsPerStudent} 張。` },
+              { text: `${boyCount} + ${girlCount} × ${ticketsPerStudent}`, correct: false, tip: `沒有括號會先算乘法，只把 ${ticketsPerStudent} 乘給女生。` },
+              { text: `${boyCount} × ${girlCount}`, correct: false, tip: `男女生人數相乘沒有實際意義。` }
+            ]),
+            answer: ans,
+            units: ["張", "人", "元"],
+            correctUnit: "張",
+            explanation: `全班共有 ${boyCount} + ${girlCount} = ${totalStudents} 人，每人 ${ticketsPerStudent} 張，合共需要 ${totalStudents} × ${ticketsPerStudent} = ${ans} 張。`
+          };
+        }
+      },
+
+      unit_cross() {
+        const sub = pick(["money", "volume", "time"]);
+        if (sub === "money") {
+          const yuan = randInt(2, 5);
+          const jiao = randInt(2, 8);
+          const addJiao = randInt(3, 9);
+          const totalJiao = yuan * 10 + jiao + addJiao;
+          const sentences = [
+            `儲蓄罐裡原有 ${yuan} 元 ${jiao} 角。`,
+            `今天又存入了 ${addJiao} 角。`,
+            `請問現在儲蓄罐裡合共有多少角？`
+          ];
+          return {
+            type: "unit_cross",
+            category: "跨單位進階：元與角換算",
+            focusTag: "1 元 ＝ 10 角，答案問「角」",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: "題目最後問「合共有多少角」，哪一步是關鍵？",
+            step1Options: shuffle([
+              { text: `先把 ${yuan} 元 ${jiao} 角換成 ${yuan * 10 + jiao} 角，再加 ${addJiao} 角`, correct: true, tip: `對！1 元等於 10 角，全部換成「角」再相加最不容易錯。` },
+              { text: `直接把 ${yuan}、${jiao} 和 ${addJiao} 相加`, correct: false, tip: `「元」和「角」單位不同，不能直接相加。` },
+              { text: `答案單位選「元」`, correct: false, tip: `再看最後一句：問的是「合共有多少角」。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="80" viewBox="0 0 460 80">
+                <text x="10" y="28" font-size="13" font-weight="bold">原有 ${yuan * 10 + jiao} 角</text>
+                <rect x="135" y="12" width="180" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+                <text x="225" y="29" font-size="12" text-anchor="middle">${yuan} 元（${yuan * 10} 角）＋ ${jiao} 角</text>
+                <rect x="320" y="12" width="125" height="24" rx="4" fill="#bbf7d0" stroke="#16a34a"/>
+                <text x="382" y="29" font-size="12" text-anchor="middle">＋ ${addJiao} 角</text>
+              </svg>
+            `,
+            step2Prompt: "換算成「角」後，正確算式是：",
+            step2Options: shuffle([
+              { text: `${yuan * 10 + jiao} + ${addJiao}`, correct: true, tip: `${yuan} 元 ${jiao} 角 ＝ ${yuan * 10 + jiao} 角，加上 ${addJiao} 角。` },
+              { text: `${yuan}${jiao} + ${addJiao}`, correct: false, tip: `1 元是 10 角，不是 100 角。` },
+              { text: `${yuan * 10 + jiao} - ${addJiao}`, correct: false, tip: `「存入」是增加，應用加法。` }
+            ]),
+            answer: totalJiao,
+            units: ["角", "元", "分"],
+            correctUnit: "角",
+            explanation: `${yuan} 元 ${jiao} 角 = ${yuan * 10 + jiao} 角，存入 ${addJiao} 角後，合共有 ${yuan * 10 + jiao} + ${addJiao} = ${totalJiao} 角。`
+          };
+        } else if (sub === "volume") {
+          const l = randInt(2, 4);
+          const ml = randInt(200, 700);
+          const drinkMl = randInt(250, 600);
+          const totalMl = l * 1000 + ml;
+          const remainMl = totalMl - drinkMl;
+          const sentences = [
+            `水壺裡原本裝了 ${l} 升 ${ml} 毫升清水。`,
+            `午飯時倒出了 ${drinkMl} 毫升。`,
+            `請問水壺裡還剩下多少毫升清水？`
+          ];
+          return {
+            type: "unit_cross",
+            category: "跨單位進階：升與毫升換算",
+            focusTag: "1 升 ＝ 1000 毫升，答案問「毫升」",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: "計算前，怎樣把「升」和「毫升」統一？",
+            step1Options: shuffle([
+              { text: `1 升 ＝ 1000 毫升，${l} 升 ${ml} 毫升 ＝ ${totalMl} 毫升，再減去 ${drinkMl} 毫升`, correct: true, tip: `非常正確！升化毫升要乘以 1000。` },
+              { text: `1 升 ＝ 100 毫升，所以是 ${l * 100 + ml} 毫升`, correct: false, tip: `小心！1 升等於 1000 毫升，不是 100 毫升。` },
+              { text: `用 ${totalMl} 加上 ${drinkMl}`, correct: false, tip: `倒出是減少，問「還剩下」要用減法。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="80" viewBox="0 0 460 80">
+                <text x="10" y="28" font-size="13" font-weight="bold">原有 ${totalMl} mL</text>
+                <rect x="130" y="12" width="120" height="24" rx="4" fill="#fecaca" stroke="#dc2626"/>
+                <text x="190" y="29" font-size="12" text-anchor="middle">倒出 ${drinkMl} mL</text>
+                <rect x="250" y="12" width="195" height="24" rx="4" fill="#bbf7d0" stroke="#16a34a"/>
+                <text x="347" y="29" font-size="12" text-anchor="middle">還剩 ？mL</text>
+              </svg>
+            `,
+            step2Prompt: "選擇正確算式：",
+            step2Options: shuffle([
+              { text: `${totalMl} - ${drinkMl}`, correct: true, tip: `${totalMl} 毫升減去倒出的 ${drinkMl} 毫升。` },
+              { text: `${totalMl} + ${drinkMl}`, correct: false, tip: `倒出後水會變少，不是相加。` },
+              { text: `${drinkMl} - ${totalMl}`, correct: false, tip: `原有水量較多，應放在減號前面。` }
+            ]),
+            answer: remainMl,
+            units: ["毫升", "升", "厘米"],
+            correctUnit: "毫升",
+            explanation: `${l} 升 ${ml} 毫升 = ${totalMl} 毫升，倒出 ${drinkMl} 毫升後，還剩下 ${totalMl} - ${drinkMl} = ${remainMl} 毫升。`
+          };
+        } else {
+          const startHour = randInt(8, 10);
+          const startMin = randInt(10, 35);
+          const addMin = randInt(30, 50);
+          const rawMin = startMin + addMin;
+          const endHour = startHour + Math.floor(rawMin / 60);
+          const endMin = rawMin % 60;
+          const sentences = [
+            `興趣班在上午 ${startHour} 時 ${startMin} 分開始。`,
+            `上課時間為 ${addMin} 分鐘。`,
+            `請問興趣班會在「上午 ${endHour} 時」過後幾分鐘結束？（填寫分鐘數字）`
+          ];
+          return {
+            type: "unit_cross",
+            category: "跨單位進階：1 小時 ＝ 60 分鐘",
+            focusTag: "滿 60 分鐘進 1 小時！",
+            sentences,
+            fullQuestionText: sentences.join(""),
+            step1Prompt: `${startMin} 分 ＋ ${addMin} 分 ＝ ${rawMin} 分，已經超過 60 分鐘（1 小時），應該怎麼換算？`,
+            step1Options: shuffle([
+              { text: `${rawMin} 分 ＝ 1 小時 ${endMin} 分，所以結束時間是上午 ${endHour} 時 ${endMin} 分`, correct: true, tip: `太厲害了！60 分鐘換成 1 小時，剩下的就是 ${endMin} 分。` },
+              { text: `結束時間是上午 ${startHour} 時 ${rawMin} 分`, correct: false, tip: `鐘面或時間上滿 60 分鐘要進 1 小時，不會寫 ${rawMin} 分。` },
+              { text: `直接用 ${addMin} 減去 ${startMin}`, correct: false, tip: `這是求結束時間，應該把開始時間加上經過時間。` }
+            ]),
+            diagramSvg: `
+              <svg width="100%" height="80" viewBox="0 0 460 80">
+                <text x="10" y="28" font-size="13" font-weight="bold">分鐘合計 ${rawMin} 分</text>
+                <rect x="145" y="12" width="165" height="24" rx="4" fill="#fde68a" stroke="#d97706"/>
+                <text x="227" y="29" font-size="12" text-anchor="middle">60 分 → ＋1 小時（${endHour} 時）</text>
+                <rect x="315" y="12" width="130" height="24" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+                <text x="380" y="29" font-size="12" text-anchor="middle">餘 ${endMin} 分</text>
+              </svg>
+            `,
+            step2Prompt: "哪一條算式能求出結束時間的「分鐘」？",
+            step2Options: shuffle([
+              { text: `(${startMin} + ${addMin}) - 60`, correct: true, tip: `先加出 ${rawMin} 分，減去 1 小時的 60 分，得到 ${endMin} 分。` },
+              { text: `${startMin} + ${addMin}`, correct: false, tip: `這還沒減去滿 1 小時的 60 分鐘。` },
+              { text: `${addMin} - ${startMin}`, correct: false, tip: `方向相反，應該是相加後再進位。` }
+            ]),
+            answer: endMin,
+            units: ["分鐘", "小時", "秒"],
+            correctUnit: "分鐘",
+            explanation: `${startMin} + ${addMin} = ${rawMin} 分鐘，${rawMin} - 60 = ${endMin} 分鐘（進 1 小時成上午 ${endHour} 時 ${endMin} 分），故為 ${endMin} 分鐘。`
+          };
+        }
+      }
+    };
+
+    function generateProblem() {
+      const filter = document.getElementById("typeFilter").value;
+      const keys = filter === "all" ? Object.keys(generators) : [filter];
+      const chosenKey = pick(keys);
+      const prob = generators[chosenKey]();
+
+      state.current = prob;
+      state.step1Done = false;
+      state.step2Done = false;
+      state.step3Done = false;
+      state.recordedMistakeThisRound = false;
+
+      document.getElementById("problemCategory").textContent = prob.category;
+      document.getElementById("problemFocusTag").textContent = prob.focusTag;
+
+      const pBox = document.getElementById("problemText");
+      pBox.innerHTML = prob.sentences
+        .map((s, idx) => `<span class="sentence" data-idx="${idx}">${s}</span>`)
+        .join(" ");
+
+      pBox.querySelectorAll(".sentence").forEach(span => {
+        span.addEventListener("click", () => span.classList.toggle("marked"));
+      });
+
+      document.getElementById("step1Box").classList.remove("locked");
+      document.getElementById("step1Tag").textContent = "進行中";
+      document.getElementById("step1Tag").classList.remove("done");
+      document.getElementById("step1Prompt").textContent = prob.step1Prompt;
+      document.getElementById("step1Feedback").className = "feedback";
+      document.getElementById("step1Feedback").textContent = "";
+
+      const s1Opts = document.getElementById("step1Options");
+      s1Opts.innerHTML = "";
+      prob.step1Options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = opt.text;
+        btn.addEventListener("click", () => handleStep1(btn, opt));
+        s1Opts.appendChild(btn);
+      });
+
+      document.getElementById("step2Box").classList.add("locked");
+      document.getElementById("step2Tag").textContent = "未解鎖";
+      document.getElementById("step2Tag").classList.remove("done");
+      document.getElementById("diagramArea").innerHTML = prob.diagramSvg;
+      document.getElementById("step2Prompt").textContent = "請先完成第一步審題，即可解鎖線段圖與列式選擇。";
+      document.getElementById("step2Options").innerHTML = "";
+      document.getElementById("step2Feedback").className = "feedback";
+
+      document.getElementById("step3Box").classList.add("locked");
+      document.getElementById("step3Tag").textContent = "未解鎖";
+      document.getElementById("step3Tag").classList.remove("done");
+      document.getElementById("step3Prompt").textContent = "請先完成第二步列式，再輸入最終答案。";
+      document.getElementById("answerInputRow").style.display = "none";
+      document.getElementById("userAnswerInput").value = "";
+      document.getElementById("step3Feedback").className = "feedback";
+
+      document.getElementById("solutionBox").className = "solution-box";
+      document.getElementById("solutionBox").innerHTML = "";
+      document.getElementById("btnNextProblem").disabled = true;
+    }
+
+    function handleStep1(btn, opt) {
+      if (state.step1Done) return;
+      const fb = document.getElementById("step1Feedback");
+      fb.classList.add("show");
+      if (opt.correct) {
+        btn.classList.add("correct");
+        fb.className = "feedback show ok";
+        fb.textContent = `✅ ${opt.tip}`;
+        state.step1Done = true;
+        document.getElementById("step1Tag").textContent = "已完成";
+        document.getElementById("step1Tag").classList.add("done");
+        unlockStep2();
+      } else {
+        btn.classList.add("wrong");
+        fb.className = "feedback show err";
+        fb.textContent = `❌ ${opt.tip}`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(opt.tip);
+      }
+    }
+
+    function unlockStep2() {
+      const prob = state.current;
+      const box = document.getElementById("step2Box");
+      box.classList.remove("locked");
+      document.getElementById("step2Tag").textContent = "進行中";
+      document.getElementById("step2Prompt").textContent = prob.step2Prompt;
+
+      const s2Opts = document.getElementById("step2Options");
+      s2Opts.innerHTML = "";
+      prob.step2Options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = opt.text;
+        btn.addEventListener("click", () => handleStep2(btn, opt));
+        s2Opts.appendChild(btn);
+      });
+    }
+
+    function handleStep2(btn, opt) {
+      if (state.step2Done) return;
+      const fb = document.getElementById("step2Feedback");
+      fb.classList.add("show");
+      if (opt.correct) {
+        btn.classList.add("correct");
+        fb.className = "feedback show ok";
+        fb.textContent = `✅ ${opt.tip}`;
+        state.step2Done = true;
+        document.getElementById("step2Tag").textContent = "已完成";
+        document.getElementById("step2Tag").classList.add("done");
+        unlockStep3();
+      } else {
+        btn.classList.add("wrong");
+        fb.className = "feedback show err";
+        fb.textContent = `❌ ${opt.tip}`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(opt.tip);
+      }
+    }
+
+    function unlockStep3() {
+      const prob = state.current;
+      const box = document.getElementById("step3Box");
+      box.classList.remove("locked");
+      document.getElementById("step3Tag").textContent = "進行中";
+      document.getElementById("step3Prompt").textContent = "請輸入正確數字並選擇單位：";
+      document.getElementById("answerInputRow").style.display = "flex";
+
+      const unitSel = document.getElementById("userUnitSelect");
+      unitSel.innerHTML = prob.units.map(u => `<option value="${u}">${u}</option>`).join("");
+    }
+
+    document.getElementById("btnCheckAnswer").addEventListener("click", () => {
+      if (state.step3Done || !state.current) return;
+      const prob = state.current;
+      const numVal = Number(document.getElementById("userAnswerInput").value);
+      const unitVal = document.getElementById("userUnitSelect").value;
+      const fb = document.getElementById("step3Feedback");
+      fb.classList.add("show");
+
+      if (numVal === prob.answer && unitVal === prob.correctUnit) {
+        fb.className = "feedback show ok";
+        fb.textContent = `🎉 完全正確！答案是 ${prob.answer} ${prob.correctUnit}。`;
+        state.step3Done = true;
+        document.getElementById("step3Tag").textContent = "已完成";
+        document.getElementById("step3Tag").classList.add("done");
+
+        state.solved += 1;
+        state.streak += 1;
+        state.stars += state.recordedMistakeThisRound ? 1 : 2;
+        saveState();
+        renderStats();
+
+        const solBox = document.getElementById("solutionBox");
+        solBox.className = "solution-box show";
+        solBox.innerHTML = `
+          <strong>💡 完整解題解析：</strong><br/>
+          ${prob.explanation}<br/>
+          <strong>答：</strong>答案是 ${prob.answer}${prob.correctUnit}。
+        `;
+        document.getElementById("btnNextProblem").disabled = false;
+      } else if (numVal === prob.answer && unitVal !== prob.correctUnit) {
+        fb.className = "feedback show err";
+        fb.textContent = `⚠️ 數字算對了，但單位選錯了！再看一次題目問的是什麼單位。`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(`數字算對（${numVal}），但單位選錯（選了「${unitVal}」，應為「${prob.correctUnit}」）。`);
+      } else {
+        fb.className = "feedback show err";
+        fb.textContent = `❌ 數字還未正確，請再細心計算一次！`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(`計算結果有誤（輸入 ${numVal || "空白"}，正確為 ${prob.answer} ${prob.correctUnit}）。`);
+      }
+    });
+
+    document.getElementById("btnNewProblem").addEventListener("click", generateProblem);
+    document.getElementById("btnNextProblem").addEventListener("click", generateProblem);
+    document.getElementById("typeFilter").addEventListener("change", generateProblem);
+    document.getElementById("btnResetStats").addEventListener("click", () => {
+      state.solved = 0;
+      state.streak = 0;
+      state.stars = 0;
+      state.mistakes = [];
+      saveState();
+      renderStats();
+      renderMistakes();
+    });
+
+    loadState();
+    generateProblem();
+  </script>
+</body>
+</html>
