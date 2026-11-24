@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>審題小偵探｜香港小三數學應用題無限生成器</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent: #f59e0b;
+      --accent-soft: #fef3c7;
+      --success: #16a34a;
+      --success-soft: #dcfce7;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang HK", "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 260px);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+    }
+
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand h1 {
+      margin: 0 0 4px;
+      font-size: 1.5rem;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 14px;
+      text-align: center;
+      min-width: 88px;
+    }
+
+    .stat-pill .num {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: block;
+    }
+
+    .stat-pill .lbl {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    select, button, input[type="number"], input[type="text"] {
+      font-family: inherit;
+      font-size: 0.95rem;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      padding: 8px 12px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--text);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      border-color: var(--success);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: var(--primary-dark);
+    }
+
+    .badge.trap {
+      background: var(--accent-soft);
+      color: #92400e;
+    }
+
+    .problem-box {
+      background: #f8fafc;
+      border-left: 5px solid var(--primary);
+      border-radius: 12px;
+      padding: 18px 20px;
+      font-size: 1.18rem;
+      margin-bottom: 10px;
+    }
+
+    .sentence {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+    }
+
+    .sentence:hover {
+      background: #e2e8f0;
+    }
+
+    .sentence.marked {
+      background: #fde047;
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .hint-tip {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 16px;
+    }
+
+    .step-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      background: #ffffff;
+    }
+
+    .step-box.locked {
+      background: #f8fafc;
+      opacity: 0.65;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .step-tag {
+      font-size: 0.78rem;
+      padding: 3px 9px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+
+    .step-tag.done {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .option-btn {
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #cbd5e1;
+      background: #fff;
+      font-size: 0.98rem;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .option-btn.correct {
+      border-color: var(--success);
+      background: var(--success-soft);
+      color: #14532d;
+    }
+
+    .option-btn.wrong {
+      border-color: var(--danger);
+      background: var(--danger-soft);
+      color: #7f1d1d;
+    }
+
+    .diagram-wrap {
+      margin: 14px 0;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      overflow-x: auto;
+    }
+
+    .answer-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .answer-row input[type="number"] {
+      width: 150px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.ok {
+      background: var(--success-soft);
+      color: #14532d;
+      border: 1px solid #86efac;
+    }
+
+    .feedback.err {
+      background: var(--danger-soft);
+      color: #7f1d1d;
+      border: 1px solid #fca5a5;
+    }
+
+    .solution-box {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 14px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      display: none;
+    }
+
+    .solution-box.show {
+      display: block;
+    }
+
+    .mistakes-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mistake-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 600px) {
+      .problem-box {
+        font-size: 1.05rem;
+      }
+      .card, header {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>🕵️‍♂️ 審題小偵探（小三無限出題版）</h1>
+        <p>先看清問題問什麼、過濾多餘條件，再畫圖列式計算！</p>
+      </div>
+      <div class="stats">
+        <div class="stat-pill">
+          <span class="num" id="statSolved">0</span>
+          <span class="lbl">已破案題數</span>
+        </div>
+        <div class="stat-pill">
+          <span class="num" id="statStreak">0</span>
+          <span class="lbl">連續答對</span>
+        </div>
+        <div class="stat-pill">
+          <span class="num" id="statStars">0</span>
+          <span class="lbl">偵探星星</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <label for="typeFilter">題型選擇：</label>
+        <select id="typeFilter">
+          <option value="all">全部題型（無限隨機）</option>
+          <option value="trap">陷阱題：過濾多餘條件</option>
+          <option value="question_focus">審題題：看清「真正所求」</option>
+          <option value="compare">倍數與相差比較</option>
+          <option value="remainder">有餘數除法（進一 / 去尾）</option>
+          <option value="unit">單位換算應用</option>
+        </select>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn-accent" id="btnNewProblem">🔄 立即產生新題目</button>
+        <button class="btn-outline" id="btnResetStats">重設紀錄</button>
+      </div>
+    </div>
+
+    <main class="card">
+      <div class="badge-row">
+        <span class="badge" id="problemCategory">題型</span>
+        <span class="badge trap" id="problemFocusTag">審題重點</span>
+      </div>
+
+      <div class="problem-box" id="problemText"></div>
+      <div class="hint-tip">💡 點擊題目中任何一句話，可以用黃色螢光筆標記重要線索或問題！</div>
+
+      <div class="steps">
+        <!-- Step 1: 看清問題 -->
+        <div class="step-box" id="step1Box">
+          <div class="step-header">
+            <span>第一步：看清問題是什麼？</span>
+            <span class="step-tag" id="step1Tag">進行中</span>
+          </div>
+          <div id="step1Prompt"></div>
+          <div class="options-grid" id="step1Options"></div>
+          <div class="feedback" id="step1Feedback"></div>
+        </div>
+
+        <!-- Step 2: 選對列式與線段圖 -->
+        <div class="step-box locked" id="step2Box">
+          <div class="step-header">
+            <span>第二步：看線段圖，選對計算算式</span>
+            <span class="step-tag" id="step2Tag">未解鎖</span>
+          </div>
+          <div class="diagram-wrap" id="diagramArea"></div>
+          <div id="step2Prompt">請先完成第一步審題，即可解鎖線段圖與列式選擇。</div>
+          <div class="options-grid" id="step2Options"></div>
+          <div class="feedback" id="step2Feedback"></div>
+        </div>
+
+        <!-- Step 3: 輸入答案與單位 -->
+        <div class="step-box locked" id="step3Box">
+          <div class="step-header">
+            <span>第三步：算出答案並選對單位</span>
+            <span class="step-tag" id="step3Tag">未解鎖</span>
+          </div>
+          <div id="step3Prompt">請先完成第二步列式，再輸入最終答案。</div>
+          <div class="answer-row" id="answerInputRow" style="display:none;">
+            <input type="number" id="userAnswerInput" placeholder="輸入數字" />
+            <select id="userUnitSelect"></select>
+            <button class="btn-success" id="btnCheckAnswer">核對答案</button>
+          </div>
+          <div class="feedback" id="step3Feedback"></div>
+        </div>
+      </div>
+
+      <div class="solution-box" id="solutionBox"></div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-primary" id="btnNextProblem" disabled>下一道新題目 ➡️</button>
+      </div>
+    </main>
+
+    <section class="card">
+      <h2 style="margin: 0 0 6px; font-size: 1.15rem;">📓 審題錯題本（提醒自己下次看清楚）</h2>
+      <p style="margin: 0; color: var(--muted); font-size: 0.9rem;">每次答錯審題、列式或答案，系統會自動記在這裡，方便重溫易錯點。</p>
+      <div class="mistakes-list" id="mistakesList">
+        <div style="color: var(--muted); font-size: 0.92rem;">目前未有錯題，繼續保持細心！</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const names = ["家朗", "詩詠", "子軒", "曉彤", "柏宇", "嘉怡", "俊傑", "卓琳"];
+    const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const shuffle = (arr) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const state = {
+      solved: 0,
+      streak: 0,
+      stars: 0,
+      mistakes: [],
+      current: null,
+      step1Done: false,
+      step2Done: false,
+      step3Done: false,
+      recordedMistakeThisRound: false
+    };
+
+    function saveState() {
+      localStorage.setItem("p3_math_detective_v1", JSON.stringify({
+        solved: state.solved,
+        streak: state.streak,
+        stars: state.stars,
+        mistakes: state.mistakes
+      }));
+    }
+
+    function loadState() {
+      try {
+        const raw = JSON.parse(localStorage.getItem("p3_math_detective_v1"));
+        if (raw) {
+          state.solved = raw.solved || 0;
+          state.streak = raw.streak || 0;
+          state.stars = raw.stars || 0;
+          state.mistakes = Array.isArray(raw.mistakes) ? raw.mistakes : [];
+        }
+      } catch (e) {}
+      renderStats();
+      renderMistakes();
+    }
+
+    function renderStats() {
+      document.getElementById("statSolved").textContent = state.solved;
+      document.getElementById("statStreak").textContent = state.streak;
+      document.getElementById("statStars").textContent = state.stars;
+    }
+
+    function recordMistake(reason) {
+      if (state.recordedMistakeThisRound || !state.current) return;
+      state.recordedMistakeThisRound = true;
+      state.mistakes.unshift({
+        category: state.current.category,
+        question: state.current.fullQuestionText,
+        reason
+      });
+      if (state.mistakes.length > 20) state.mistakes.pop();
+      saveState();
+      renderMistakes();
+    }
+
+    function renderMistakes() {
+      const el = document.getElementById("mistakesList");
+      if (!state.mistakes.length) {
+        el.innerHTML = `<div style="color: var(--muted); font-size: 0.92rem;">目前未有錯題，繼續保持細心！</div>`;
+        return;
+      }
+      el.innerHTML = state.mistakes.map(m => `
+        <div class="mistake-item">
+          <strong>【${m.category}】</strong> ${m.question}<br/>
+          <span style="color:#9a3412;">審題提醒：${m.reason}</span>
+        </div>
+      `).join("");
+    }
+
+    // --- 題目生成器 ---
+    const generators = {
+      trap() {
+        const n = pick(names);
+        const penPrice = randInt(8, 18);
+        const penQty = randInt(2, 5);
+        const bookPrice = randInt(25, 45); // 干擾資訊
+        const total = penPrice * penQty;
+
+        const sentences = [
+          `${n}去文具店買了 ${penQty} 支原子筆，每支 $${penPrice}。`,
+          `店內另有每本 $${bookPrice} 的筆記簿。`,
+          `請問${n}買原子筆一共要付多少元？`
+        ];
+
+        return {
+          type: "trap",
+          category: "陷阱題：過濾多餘條件",
+          focusTag: "小心無關數字！",
+          sentences,
+          fullQuestionText: sentences.join(""),
+          step1Prompt: "題目裡出現了幾個價錢？哪一個才是「真正需要用到」的？",
+          step1Options: shuffle([
+            { text: `只算買 ${penQty} 支原子筆的錢（每支 $${penPrice}），筆記簿 $${bookPrice} 是多餘條件`, correct: true, tip: "對！問題只問買「原子筆」要付多少元，筆記簿價錢是干擾資訊。" },
+            { text: `把原子筆價錢 $${penPrice} 和筆記簿價錢 $${bookPrice} 加起來`, correct: false, tip: "看清楚問題！題目沒有說要買筆記簿。" },
+            { text: `只看筆記簿的價錢 $${bookPrice}`, correct: false, tip: "再讀一次最後一句：問的是「買原子筆一共要付多少元」。" }
+          ]),
+          diagramSvg: `
+            <svg width="100%" height="95" viewBox="0 0 460 95">
+              <text x="10" y="22" font-size="13" fill="#1e293b" font-weight="bold">原子筆（共 ${penQty} 份）：</text>
+              ${Array.from({ length: penQty }, (_, i) => {
+                const w = Math.floor(240 / penQty);
+                const x = 165 + i * w;
+                return `<rect x="${x}" y="8" width="${w - 4}" height="24" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+                        <text x="${x + (w - 4) / 2}" y="25" font-size="12" text-anchor="middle" fill="#1e3a8a">$${penPrice}</text>`;
+              }).join("")}
+              <text x="10" y="62" font-size="13" fill="#94a3b8">筆記簿（未買，不計）：</text>
+              <rect x="165" y="48" width="110" height="22" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="4 3"/>
+              <text x="220" y="63" font-size="12" text-anchor="middle" fill="#64748b">$${bookPrice}（干擾）</text>
+            </svg>
+          `,
+          step2Prompt: "選擇正確算式：",
+          step2Options: shuffle([
+            { text: `${penPrice} × ${penQty}`, correct: true, tip: "每支原子筆 $penPrice，買 penQty 支，用乘法。" },
+            { text: `${penPrice} + ${penQty} + ${bookPrice}`, correct: false, tip: "不要把干擾數字加進去，數量與價錢也不能直接相加。" },
+            { text: `${bookPrice} × ${penQty}`, correct: false, tip: `${penQty} 是原子筆的數量，不是筆記簿的數量。` }
+          ]),
+          answer: total,
+          units: ["元", "角", "支", "本"],
+          correctUnit: "元",
+          explanation: `${n}買了 ${penQty} 支原子筆，每支 $${penPrice}，算式為 ${penPrice} × ${penQty} = ${total}（元）。筆記簿的 $${bookPrice} 與問題無關，不用計算。`
+        };
+      },
+
+      question_focus() {
+        const n = pick(names);
+        const total = randInt(60, 120);
+        const spent = randInt(15, 45);
+        const remain = total - spent;
+
+        const sentences = [
+          `${n}原有 ${total} 元零用錢。`,
+          `買了一盒顏色筆用去 ${spent} 元。`,
+          `請問${n}還剩下多少元？`
+        ];
+
+        return {
+          type: "question_focus",
+          category: "審題題：看清「真正所求」",
+          focusTag: "問「還剩下」還是「用去」？",
+          sentences,
+          fullQuestionText: sentences.join(""),
+          step1Prompt: "這道題目最後一句問的是什麼？",
+          step1Options: shuffle([
+            { text: "問用去錢後，手頭上「還剩下」多少元", correct: true, tip: "很棒！看清「還剩下」，代表原有減去用去。" },
+            { text: "問一共用去了多少元", correct: false, tip: "題目已經直接告訴你用去 ${spent} 元了，再看清楚最後一句！" },
+            { text: "問原有零用錢的兩倍是多少", correct: false, tip: "題目沒有要求計算兩倍。" }
+          ]),
+          diagramSvg: `
+            <svg width="100%" height="85" viewBox="0 0 460 85">
+              <text x="10" y="24" font-size="13" fill="#1e293b" font-weight="bold">原有零用錢（${total} 元）：</text>
+              <rect x="160" y="10" width="140" height="24" rx="4" fill="#fde68a" stroke="#d97706"/>
+              <text x="230" y="27" font-size="12" text-anchor="middle" fill="#78350f">用去 ${spent} 元</text>
+              <rect x="300" y="10" width="140" height="24" rx="4" fill="#bbf7d0" stroke="#16a34a"/>
+              <text x="370" y="27" font-size="12" text-anchor="middle" fill="#14532d">還剩 ？元</text>
+            </svg>
+          `,
+          step2Prompt: "看線段圖，哪一條算式可以求出「還剩多少元」？",
+          step2Options: shuffle([
+            { text: `${total} - ${spent}`, correct: true, tip: "原有 ${total} 元減去用去的 ${spent} 元，就是剩下的錢。" },
+            { text: `${total} + ${spent}`, correct: false, tip: "用去錢會變少，不是相加。" },
+            { text: `${spent} - ${total}`, correct: false, tip: "被減數應該是較大的原有金額 ${total}。" }
+          ]),
+          answer: remain,
+          units: ["元", "張", "盒"],
+          correctUnit: "元",
+          explanation: `原有 ${total} 元，用去 ${spent} 元，還剩下 ${total} - ${spent} = ${remain} 元。`
+        };
+      },
+
+      compare() {
+        const n1 = pick(names);
+        let n2 = pick(names);
+        if (n2 === n1) n2 = "明朗";
+        const base = randInt(12, 30);
+        const mult = randInt(2, 4);
+        const diff = base * mult - base;
+
+        const sentences = [
+          `${n1}摺了 ${base} 隻紙鶴。`,
+          `${n2}摺的數量是${n1}的 ${mult} 倍。`,
+          `請問${n2}比${n1}多摺了多少隻紙鶴？`
+        ];
+
+        return {
+          type: "compare",
+          category: "倍數與相差比較",
+          focusTag: "注意問「相差」不是「總數」！",
+          sentences,
+          fullQuestionText: sentences.join(""),
+          step1Prompt: "這題最後問「多摺了多少隻」，意思是要求什麼？",
+          step1Options: shuffle([
+            { text: "先算${n2}摺了幾隻，再算兩人數量的「相差」", correct: true, tip: "答對了！先求 ${n1} 的 ${mult} 倍，再減去 ${n1} 的數量。" },
+            { text: "直接把 ${base} 乘以 ${mult} 就是答案", correct: false, tip: "${base} × ${mult} 算出的是${n2}摺的總數，題目問的是「比${n1}多摺了多少隻」。" },
+            { text: "把 ${base} 和 ${mult} 相加", correct: false, tip: "「${mult} 倍」表示乘法關係，不是相加。" }
+          ]),
+          diagramSvg: `
+            <svg width="100%" height="95" viewBox="0 0 460 95">
+              <text x="10" y="24" font-size="13" fill="#1e293b" font-weight="bold">${n1}：</text>
+              <rect x="85" y="10" width="90" height="22" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+              <text x="130" y="25" font-size="12" text-anchor="middle">${base} 隻</text>
+
+              <text x="10" y="60" font-size="13" fill="#1e293b" font-weight="bold">${n2}：</text>
+              ${Array.from({ length: mult }, (_, i) => {
+                const x = 85 + i * 90;
+                const fill = i === 0 ? "#bfdbfe" : "#fde68a";
+                const stroke = i === 0 ? "#2563eb" : "#d97706";
+                const label = i === 0 ? `${base}` : (i === 1 ? "多出部分" : "多出部分");
+                return `<rect x="${x}" y="46" width="90" height="22" rx="4" fill="${fill}" stroke="${stroke}"/>
+                        <text x="${x + 45}" y="61" font-size="11" text-anchor="middle">${label}</text>`;
+              }).join("")}
+            </svg>
+          `,
+          step2Prompt: "選擇正確算式：",
+          step2Options: shuffle([
+            { text: `${base} × ${mult} - ${base}`, correct: true, tip: "先算 ${n2} 有 ${base} × ${mult} 隻，再減去${n1}的 ${base} 隻。" },
+            { text: `${base} × ${mult}`, correct: false, tip: "這只是${n2}的數量，還要減去${n1}的數量才得到「多出多少」。" },
+            { text: `${base} × ${mult} + ${base}`, correct: false, tip: "問的是相差（多多少），應用減法而非加法。" }
+          ]),
+          answer: diff,
+          units: ["隻", "倍", "張"],
+          correctUnit: "隻",
+          explanation: `${n2}摺了 ${base} × ${mult} = ${base * mult} 隻，比${n1}多 ${base * mult} - ${base} = ${diff} 隻。`
+        };
+      },
+
+      remainder() {
+        const cap = randInt(4, 8);
+        const q = randInt(4, 9);
+        const rem = randInt(1, cap - 1);
+        const total = cap * q + rem;
+        const needBoats = q + 1;
+
+        const sentences = [
+          `小船每艘最多可載 ${cap} 人。`,
+          `現有 ${total} 名同學要過河。`,
+          `請問最少需要租用多少艘小船，才能讓全部同學都過河？`
+        ];
+
+        return {
+          type: "remainder",
+          category: "有餘數除法（進一法）",
+          focusTag: "餘下的 ${rem} 人也要過河！",
+          sentences,
+          fullQuestionText: sentences.join(""),
+          step1Prompt: "如果 ${total} ÷ ${cap} 算出商是 ${q}、餘數是 ${rem}，這 ${rem} 人該怎麼辦？",
+          step1Options: shuffle([
+            { text: "還剩 ${rem} 人未過河，所以要再多租 1 艘船（共 ${needBoats} 艘）", correct: true, tip: "對！題目說「全部同學都過河」，餘數不能丟下，要加 1 艘。" },
+            { text: "把餘數捨去，只需租 ${q} 艘船", correct: false, tip: "如果只租 ${q} 艘，會有 ${rem} 名同學留在岸邊過不了河！" },
+            { text: "只租 ${rem} 艘船", correct: false, tip: "${rem} 是餘數人數，不是船的數量。" }
+          ]),
+          diagramSvg: `
+            <svg width="100%" height="80" viewBox="0 0 460 80">
+              <text x="10" y="28" font-size="13" fill="#1e293b" font-weight="bold">總人數 ${total} 人</text>
+              <rect x="115" y="12" width="210" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+              <text x="220" y="29" font-size="12" text-anchor="middle">${q} 艘滿載船（每艘 ${cap} 人）</text>
+              <rect x="332" y="12" width="110" height="24" rx="4" fill="#fecaca" stroke="#dc2626"/>
+              <text x="387" y="29" font-size="12" text-anchor="middle" fill="#991b1b">餘 ${rem} 人 → +1 艘</text>
+            </svg>
+          `,
+          step2Prompt: "哪一組算式能正確求出最少需要的船數？",
+          step2Options: shuffle([
+            { text: `${total} ÷ ${cap} = ${q} …… ${rem}，再 ${q} + 1 = ${needBoats}`, correct: true, tip: "商 ${q} 艘再加上餘數需要的 1 艘，一共 ${needBoats} 艘。" },
+            { text: `${total} ÷ ${cap} = ${q}，答案就是 ${q}`, correct: false, tip: "別忘了還有 ${rem} 人需要坐船！" },
+            { text: `${total} - ${cap}`, correct: false, tip: "每艘載 ${cap} 人是平均分組，應用除法。" }
+          ]),
+          answer: needBoats,
+          units: ["艘", "人", "組"],
+          correctUnit: "艘",
+          explanation: `${total} ÷ ${cap} = ${q}（艘）…… ${rem}（人）。餘下 ${rem} 人仍需 1 艘小船，所以最少需要 ${q} + 1 = ${needBoats} 艘。`
+        };
+      },
+
+      unit() {
+        const m = randInt(2, 5);
+        const cm = randInt(20, 80);
+        const cutCm = randInt(15, 50);
+        const totalCm = m * 100 + cm;
+        const ansCm = totalCm - cutCm;
+
+        const sentences = [
+          `一條絲帶長 ${m} 米 ${cm} 厘米。`,
+          `包裝禮物剪去了 ${cutCm} 厘米。`,
+          `請問絲帶還剩下多少厘米？`
+        ];
+
+        return {
+          type: "unit",
+          category: "單位換算應用",
+          focusTag: "先統一單位（1 米 = 100 厘米）！",
+          sentences,
+          fullQuestionText: sentences.join(""),
+          step1Prompt: "計算前，第一步最重要的審題動作是什麼？",
+          step1Options: shuffle([
+            { text: "先看清楚題目問「多少厘米」，把 ${m} 米 ${cm} 厘米換算成 ${totalCm} 厘米", correct: true, tip: "太棒了！單位相同才能直接加減，且答案單位要選「厘米」。" },
+            { text: "直接用 ${m} 減去 ${cutCm}", correct: false, tip: "單位不同（米和厘米），不能直接相減。" },
+            { text: "答案單位寫成「米」", correct: false, tip: "再看最後一句：問的是「還剩下多少厘米」。" }
+          ]),
+          diagramSvg: `
+            <svg width="100%" height="80" viewBox="0 0 460 80">
+              <text x="10" y="28" font-size="13" fill="#1e293b" font-weight="bold">全長 ${totalCm} 厘米</text>
+              <rect x="130" y="12" width="110" height="24" rx="4" fill="#fed7aa" stroke="#ea580c"/>
+              <text x="185" y="29" font-size="12" text-anchor="middle">剪去 ${cutCm} cm</text>
+              <rect x="240" y="12" width="200" height="24" rx="4" fill="#bbf7d0" stroke="#16a34a"/>
+              <text x="340" y="29" font-size="12" text-anchor="middle">剩下 ？cm</text>
+            </svg>
+          `,
+          step2Prompt: "統一為「厘米」後，正確算式是：",
+          step2Options: shuffle([
+            { text: `${totalCm} - ${cutCm}`, correct: true, tip: "${m} 米 ${cm} 厘米 = ${totalCm} 厘米，減去 ${cutCm} 厘米。" },
+            { text: `${m}${cm} - ${cutCm}`, correct: false, tip: "1 米等於 100 厘米，不是 10 厘米。" },
+            { text: `${totalCm} + ${cutCm}`, correct: false, tip: "剪去是減少，應用減法。" }
+          ]),
+          answer: ansCm,
+          units: ["厘米", "米", "毫米"],
+          correctUnit: "厘米",
+          explanation: `${m} 米 ${cm} 厘米 = ${m * 100} + ${cm} = ${totalCm} 厘米。剪去 ${cutCm} 厘米後，剩下 ${totalCm} - ${cutCm} = ${ansCm} 厘米。`
+        };
+      }
+    };
+
+    function generateProblem() {
+      const filter = document.getElementById("typeFilter").value;
+      const keys = filter === "all" ? Object.keys(generators) : [filter];
+      const chosenKey = pick(keys);
+      const prob = generators[chosenKey]();
+
+      state.current = prob;
+      state.step1Done = false;
+      state.step2Done = false;
+      state.step3Done = false;
+      state.recordedMistakeThisRound = false;
+
+      document.getElementById("problemCategory").textContent = prob.category;
+      document.getElementById("problemFocusTag").textContent = prob.focusTag;
+
+      const pBox = document.getElementById("problemText");
+      pBox.innerHTML = prob.sentences
+        .map((s, idx) => `<span class="sentence" data-idx="${idx}">${s}</span>`)
+        .join(" ");
+
+      pBox.querySelectorAll(".sentence").forEach(span => {
+        span.addEventListener("click", () => span.classList.toggle("marked"));
+      });
+
+      // Reset Step 1
+      document.getElementById("step1Box").classList.remove("locked");
+      document.getElementById("step1Tag").textContent = "進行中";
+      document.getElementById("step1Tag").classList.remove("done");
+      document.getElementById("step1Prompt").textContent = prob.step1Prompt;
+      document.getElementById("step1Feedback").className = "feedback";
+      document.getElementById("step1Feedback").textContent = "";
+
+      const s1Opts = document.getElementById("step1Options");
+      s1Opts.innerHTML = "";
+      prob.step1Options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = opt.text;
+        btn.addEventListener("click", () => handleStep1(btn, opt));
+        s1Opts.appendChild(btn);
+      });
+
+      // Reset Step 2
+      document.getElementById("step2Box").classList.add("locked");
+      document.getElementById("step2Tag").textContent = "未解鎖";
+      document.getElementById("step2Tag").classList.remove("done");
+      document.getElementById("diagramArea").innerHTML = prob.diagramSvg;
+      document.getElementById("step2Prompt").textContent = "請先完成第一步審題，即可解鎖線段圖與列式選擇。";
+      document.getElementById("step2Options").innerHTML = "";
+      document.getElementById("step2Feedback").className = "feedback";
+
+      // Reset Step 3
+      document.getElementById("step3Box").classList.add("locked");
+      document.getElementById("step3Tag").textContent = "未解鎖";
+      document.getElementById("step3Tag").classList.remove("done");
+      document.getElementById("step3Prompt").textContent = "請先完成第二步列式，再輸入最終答案。";
+      document.getElementById("answerInputRow").style.display = "none";
+      document.getElementById("userAnswerInput").value = "";
+      document.getElementById("step3Feedback").className = "feedback";
+
+      // Reset Solution & Next
+      document.getElementById("solutionBox").className = "solution-box";
+      document.getElementById("solutionBox").innerHTML = "";
+      document.getElementById("btnNextProblem").disabled = true;
+    }
+
+    function handleStep1(btn, opt) {
+      if (state.step1Done) return;
+      const fb = document.getElementById("step1Feedback");
+      fb.classList.add("show");
+      if (opt.correct) {
+        btn.classList.add("correct");
+        fb.className = "feedback show ok";
+        fb.textContent = `✅ ${opt.tip}`;
+        state.step1Done = true;
+        document.getElementById("step1Tag").textContent = "已完成";
+        document.getElementById("step1Tag").classList.add("done");
+        unlockStep2();
+      } else {
+        btn.classList.add("wrong");
+        fb.className = "feedback show err";
+        fb.textContent = `❌ ${opt.tip}`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(opt.tip);
+      }
+    }
+
+    function unlockStep2() {
+      const prob = state.current;
+      const box = document.getElementById("step2Box");
+      box.classList.remove("locked");
+      document.getElementById("step2Tag").textContent = "進行中";
+      document.getElementById("step2Prompt").textContent = prob.step2Prompt;
+
+      const s2Opts = document.getElementById("step2Options");
+      s2Opts.innerHTML = "";
+      prob.step2Options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = opt.text;
+        btn.addEventListener("click", () => handleStep2(btn, opt));
+        s2Opts.appendChild(btn);
+      });
+    }
+
+    function handleStep2(btn, opt) {
+      if (state.step2Done) return;
+      const fb = document.getElementById("step2Feedback");
+      fb.classList.add("show");
+      if (opt.correct) {
+        btn.classList.add("correct");
+        fb.className = "feedback show ok";
+        fb.textContent = `✅ ${opt.tip}`;
+        state.step2Done = true;
+        document.getElementById("step2Tag").textContent = "已完成";
+        document.getElementById("step2Tag").classList.add("done");
+        unlockStep3();
+      } else {
+        btn.classList.add("wrong");
+        fb.className = "feedback show err";
+        fb.textContent = `❌ ${opt.tip}`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(opt.tip);
+      }
+    }
+
+    function unlockStep3() {
+      const prob = state.current;
+      const box = document.getElementById("step3Box");
+      box.classList.remove("locked");
+      document.getElementById("step3Tag").textContent = "進行中";
+      document.getElementById("step3Prompt").textContent = "請輸入正確數字並選擇單位：";
+      document.getElementById("answerInputRow").style.display = "flex";
+
+      const unitSel = document.getElementById("userUnitSelect");
+      unitSel.innerHTML = prob.units.map(u => `<option value="${u}">${u}</option>`).join("");
+    }
+
+    document.getElementById("btnCheckAnswer").addEventListener("click", () => {
+      if (state.step3Done || !state.current) return;
+      const prob = state.current;
+      const numVal = Number(document.getElementById("userAnswerInput").value);
+      const unitVal = document.getElementById("userUnitSelect").value;
+      const fb = document.getElementById("step3Feedback");
+      fb.classList.add("show");
+
+      if (numVal === prob.answer && unitVal === prob.correctUnit) {
+        fb.className = "feedback show ok";
+        fb.textContent = `🎉 完全正確！答案是 ${prob.answer} ${prob.correctUnit}。`;
+        state.step3Done = true;
+        document.getElementById("step3Tag").textContent = "已完成";
+        document.getElementById("step3Tag").classList.add("done");
+
+        state.solved += 1;
+        state.streak += 1;
+        state.stars += state.recordedMistakeThisRound ? 1 : 2;
+        saveState();
+        renderStats();
+
+        const solBox = document.getElementById("solutionBox");
+        solBox.className = "solution-box show";
+        solBox.innerHTML = `
+          <strong>💡 完整解題解析：</strong><br/>
+          ${prob.explanation}<br/>
+          <strong>答：</strong>${prob.explanation.includes("答：") ? "" : `答案是 ${prob.answer}${prob.correctUnit}。`}
+        `;
+        document.getElementById("btnNextProblem").disabled = false;
+      } else if (numVal === prob.answer && unitVal !== prob.correctUnit) {
+        fb.className = "feedback show err";
+        fb.textContent = `⚠️ 數字算對了，但單位選錯了！再看一次題目問的是什麼單位。`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(`數字算對（${numVal}），但單位選錯（選了「${unitVal}」，應為「${prob.correctUnit}」）。`);
+      } else {
+        fb.className = "feedback show err";
+        fb.textContent = `❌ 數字還未正確，請再細心計算一次！`;
+        state.streak = 0;
+        renderStats();
+        recordMistake(`計算結果有誤（輸入 ${numVal || "空白"}，正確為 ${prob.answer} ${prob.correctUnit}）。`);
+      }
+    });
+
+    document.getElementById("btnNewProblem").addEventListener("click", generateProblem);
+    document.getElementById("btnNextProblem").addEventListener("click", generateProblem);
+    document.getElementById("typeFilter").addEventListener("change", generateProblem);
+    document.getElementById("btnResetStats").addEventListener("click", () => {
+      state.solved = 0;
+      state.streak = 0;
+      state.stars = 0;
+      state.mistakes = [];
+      saveState();
+      renderStats();
+      renderMistakes();
+    });
+
+    loadState();
+    generateProblem();
+  </script>
+</body>
+</html>
